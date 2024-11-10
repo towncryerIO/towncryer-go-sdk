@@ -1,0 +1,99 @@
+package apis
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"net/http"
+	"reflect"
+
+	"github.com/carlmjohnson/requests"
+	"github.com/go-playground/validator/v10"
+	"github.com/philippta/trip"
+)
+
+// validatePayload checks if the given payload is valid according to predefined
+// struct validation rules.
+//
+// Parameters:
+//   - payload (any): The payload to validate. It should be a struct that follows
+//     the necessary validation tags required for the application.
+//
+// Returns:
+//   - error: An error if the payload is nil or if validation fails; otherwise, nil.
+//
+// Usage:
+//
+//	If the payload is nil, validatePayload will return ErrPayloadCannotBeNil.
+//	Otherwise, it will validate the payload based on struct field tags, returning
+//	any error if the payload does not meet required validation constraints.
+func validatePayload(payload any) error {
+	if reflect.ValueOf(payload).IsNil() {
+		return ErrPayloadCannotBeNil
+	}
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	return validate.Struct(payload)
+}
+
+// RateLimitTransport wraps an existing http.RoundTripper to enforce request payload size limits.
+// It limits the size of request bodies to a maximum defined by MAX_REQUEST_PAYLOAD_SIZE.
+//
+// Parameters:
+//   - rt (http.RoundTripper): The underlying RoundTripper to wrap. If nil, it defaults
+//     to http.DefaultTransport.
+//
+// Returns:
+//   - http.RoundTripper: A RoundTripper that enforces a payload size limit.
+//
+// Behavior:
+//
+//	If the request payload exceeds MAX_REQUEST_PAYLOAD_SIZE, RateLimitTransport will return
+//	an error (ErrRequestPayloadLimitReached) without sending the request. If the payload size
+//	is within the limit, it passes the request through to the underlying RoundTripper.
+func RateLimitTransport(rt http.RoundTripper) http.RoundTripper {
+	if rt == nil {
+		rt = http.DefaultTransport
+	}
+
+	return requests.RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
+		if req.Body != nil {
+			var bodyBuffer bytes.Buffer
+			limitReader := io.LimitReader(req.Body, int64(MAX_REQUEST_PAYLOAD_SIZE)+1)
+
+			written, err := io.Copy(&bodyBuffer, limitReader)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read request body: %w", err)
+			}
+
+			if written > int64(MAX_REQUEST_PAYLOAD_SIZE) {
+				return nil, ErrRequestPayloadLimitReached
+			}
+
+			req.Body = io.NopCloser(&bodyBuffer)
+		}
+
+		return rt.RoundTrip(req)
+	})
+}
+
+// RetryTransport configures an HTTP RoundTripper with retry logic. It automatically retries
+// requests on certain HTTP status codes, up to a maximum number of retry attempts defined by
+// MAX_NO_OF_RETRIES, with a delay between retries defined by RETRY_DELAY.
+//
+// Returns:
+//   - http.RoundTripper: A RoundTripper configured to retry requests based on predefined rules.
+//
+// Behavior:
+//
+//	RetryTransport retries requests that receive retryable HTTP status codes (e.g., 429 for
+//	Too Many Requests or other codes in trip.RetryableStatusCodes) up to MAX_NO_OF_RETRIES times.
+//	It uses RETRY_DELAY as the delay between retry attempts. If the maximum retries are reached
+//	without a successful response, it stops retrying.
+func RetryTransport() http.RoundTripper {
+	return trip.Default(
+		trip.Retry(MAX_NO_OF_RETRIES, RETRY_DELAY),
+		trip.Retry(MAX_NO_OF_RETRIES, RETRY_DELAY, http.StatusTooManyRequests),
+		trip.Retry(MAX_NO_OF_RETRIES, RETRY_DELAY, trip.RetryableStatusCodes...),
+	)
+}
