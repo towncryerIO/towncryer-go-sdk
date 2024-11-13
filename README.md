@@ -86,3 +86,7 @@ if err != nil {
 ## Contributing
 
 If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on the [Towncryer SDK repository](https://github.com/volvlabs/towncryer-sdk).
+
+## License
+
+The Towncryer SDK is licensed under the [MIT License](LICENSE).
