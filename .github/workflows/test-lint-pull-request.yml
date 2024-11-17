@@ -1,0 +1,47 @@
+name: Test and Lint
+
+on:
+  pull_request:
+    branches: [ "main" ] 
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Step 2: Set up Go environment
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+
+      # Step 3: Cache dependencies to speed up builds
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: go mod tidy
+
+      # Step 5: Run tests
+      - name: Run tests
+        run: go test ./... -v
+
+      # Step 6: Run linting
+      - name: Run linting
+        run: |
+          go install golang.org/x/lint/golint@latest
+          golint ./...
