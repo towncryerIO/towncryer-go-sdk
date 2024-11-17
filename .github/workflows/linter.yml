@@ -1,17 +1,18 @@
 name: Lint Code Base
-
 on:
-  push: # Trigger on pushes to all branches
-  pull_request: # Trigger on pull requests to all branches
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  run-lint:
+  lint:
+    name: Run Linters
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
 
       - name: Lint Code Base
