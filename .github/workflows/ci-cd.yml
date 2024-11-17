@@ -1,0 +1,100 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: github/super-linter@v4
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: "main"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Run Tests
+        run: go test -v ./...
+
+  release:
+    name: Create Release
+    needs: [lint, test]  # Only run if lint and test jobs pass
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # Only run on push to main
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Get previous tag
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        continue-on-error: true
+        with:
+          fallback: v0.0.0
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          default_prerelease_bump: patch
+          release_branches: main
+          custom_tag: ${{ steps.previoustag.outputs.tag }}
+
+      - name: Build project
+        env:
+          VERSION: ${{ steps.tag_version.outputs.new_tag }}
+        run: |
+          mkdir -p build
+          GOOS=linux GOARCH=amd64 go build -v -o build/sdk_linux_amd64
+          GOOS=darwin GOARCH=amd64 go build -v -o build/sdk_darwin_amd64
+          GOOS=windows GOARCH=amd64 go build -v -o build/sdk_windows_amd64.exe
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+          draft: false
+          prerelease: false
+          files: |
+            build/sdk_linux_amd64
+            build/sdk_darwin_amd64
+            build/sdk_windows_amd64.exe
