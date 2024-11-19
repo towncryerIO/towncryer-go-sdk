@@ -1,8 +1,6 @@
 module github.com/volvlabs/towncryer-sdk
 
-go 1.22
-
-toolchain go1.22.9
+go 1.22.9
 
 require (
 	github.com/carlmjohnson/requests v0.24.2
