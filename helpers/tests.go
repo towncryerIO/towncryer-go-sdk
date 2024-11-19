@@ -20,6 +20,7 @@ func CreateHttpServer(t *testing.T, endpoint string, statusCode int, payload []b
 		assert.Equal(t, "application/json", r.Header.Get("Accept"))
 
 		w.WriteHeader(statusCode)
+		//nolint:errcheck
 		w.Write(payload)
 	}))
 

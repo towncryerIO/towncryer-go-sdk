@@ -9,14 +9,11 @@ linters:
     - staticcheck
 
 issues:
-  exclude:
-    - "helpers/tests.go.*Error return value of .* is not checked"
-    - "apis/utils_test.go.*Error return value of .* is not checked"
   exclude-rules:
     - linters:
         - errcheck
       path: helpers/tests.go
-      text: "write error"
+      text: "write"
     - linters:
         - errcheck
       path: apis/utils_test.go
@@ -27,5 +24,8 @@ issues:
 
 linters-settings:
   errcheck:
-    # Explicitly ignore these specific error checks
-    exclude: '^(w\.Write|Fetch)$'
+    exclude-functions:
+      - (*testing.T).Helper
+      - io.WriteString
+      - fmt.Fprintf
+      - fmt.Fprintln

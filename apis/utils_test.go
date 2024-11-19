@@ -146,6 +146,7 @@ func TestRetryTransport(t *testing.T) {
 			requests.URL(server.URL).
 				Transport(apis.RetryTransport()).
 				ToString(&response).
+				//nolint:errcheck
 				Fetch(ctx)
 
 			// Assert:
