@@ -1,0 +1,13 @@
+run:
+  timeout: 5m
+linters:
+  enable:
+    - govet
+    - errcheck
+    - gofmt
+    - staticcheck
+issues:
+  exclude-rules:
+    - linters:
+        - gofmt
+      text: "imports are not sorted"
