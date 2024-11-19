@@ -12,7 +12,7 @@ type Events struct {
 }
 
 func NewEvents(config *config.Configuration) *Events {
-	return &Events{BaseAPI: NewBaseAPI(config, "events")}
+	return &Events{BaseAPI: NewBaseAPI(config, "customers")}
 }
 
 func (e *Events) PublishEvent(ctx context.Context, payload *models.PublishEventPayload) (*models.ApiResponse[map[string]any], error) {
