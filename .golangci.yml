@@ -8,14 +8,12 @@ linters:
     - staticcheck
 issues:
   exclude:
-    - path: "helpers/tests.go"
-      text: "Error return value of .* is not checked"
-    - path: "apis/utils_test.go"
-      text: "Error return value of .* is not checked"
+    - "helpers/tests.go.*Error return value of .* is not checked"
+    - "apis/utils_test.go.*Error return value of .* is not checked"
   exclude-rules:
     - linters:
         - gofmt
       text: "imports are not sorted"
 linters-settings:
   errcheck:
-    # Additional settings for errcheck can be added here if necessary
+    # Leave empty or customize further settings for errcheck if needed
