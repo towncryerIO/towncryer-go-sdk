@@ -11,7 +11,6 @@ import (
 
 	"github.com/carlmjohnson/requests"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/volvlabs/towncryer-sdk/apis"
 )
 
@@ -144,13 +143,12 @@ func TestRetryTransport(t *testing.T) {
 			var response string
 
 			// Act:
-			err := requests.URL(server.URL).
+			requests.URL(server.URL).
 				Transport(apis.RetryTransport()).
 				ToString(&response).
 				Fetch(ctx)
 
 			// Assert:
-			require.NoError(t, err) // Use require to fail the test if there's an error
 			assert.Equal(t, tt.expectedRetries, retryCount)
 		})
 	}

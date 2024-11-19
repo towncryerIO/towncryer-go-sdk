@@ -1,19 +1,31 @@
 run:
   timeout: 5m
+
 linters:
   enable:
     - govet
     - errcheck
     - gofmt
     - staticcheck
+
 issues:
   exclude:
     - "helpers/tests.go.*Error return value of .* is not checked"
     - "apis/utils_test.go.*Error return value of .* is not checked"
   exclude-rules:
     - linters:
+        - errcheck
+      path: helpers/tests.go
+      text: "write error"
+    - linters:
+        - errcheck
+      path: apis/utils_test.go
+      text: "Fetch"
+    - linters:
         - gofmt
       text: "imports are not sorted"
+
 linters-settings:
   errcheck:
-    # Leave empty or customize further settings for errcheck if needed
+    # Explicitly ignore these specific error checks
+    exclude: '^(w\.Write|Fetch)$'

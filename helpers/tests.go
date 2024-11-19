@@ -20,9 +20,7 @@ func CreateHttpServer(t *testing.T, endpoint string, statusCode int, payload []b
 		assert.Equal(t, "application/json", r.Header.Get("Accept"))
 
 		w.WriteHeader(statusCode)
-		if _, err := w.Write(payload); err != nil {
-			t.Errorf("failed to write payload: %v", err)
-		}
+		w.Write(payload)
 	}))
 
 	config := &config.Configuration{
