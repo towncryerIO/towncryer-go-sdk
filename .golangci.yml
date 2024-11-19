@@ -11,3 +11,8 @@ issues:
     - linters:
         - gofmt
       text: "imports are not sorted"
+linters-settings:
+  errcheck:
+    exclude:
+      - "helpers/tests.go"
+      - "apis/utils_test.go"
