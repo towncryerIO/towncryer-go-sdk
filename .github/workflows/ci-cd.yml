@@ -76,9 +76,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: patch
-          default_prerelease_bump: patch
           release_branches: main
-          custom_tag: ${{ steps.previoustag.outputs.tag }}
 
       - name: Build project
         env:
