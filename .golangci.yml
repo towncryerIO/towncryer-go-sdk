@@ -1,0 +1,31 @@
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - gofmt
+    - staticcheck
+
+issues:
+  exclude-rules:
+    - linters:
+        - errcheck
+      path: helpers/tests.go
+      text: "write"
+    - linters:
+        - errcheck
+      path: apis/utils_test.go
+      text: "Fetch"
+    - linters:
+        - gofmt
+      text: "imports are not sorted"
+
+linters-settings:
+  errcheck:
+    exclude-functions:
+      - (*testing.T).Helper
+      - io.WriteString
+      - fmt.Fprintf
+      - fmt.Fprintln
