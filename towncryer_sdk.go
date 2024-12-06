@@ -65,7 +65,3 @@ func (t *TowncryerSdk) MessagesApi() *apis.Messages {
 
 	return t.messagesApi
 }
-
-func (t *TowncryerSdk) Run() {
-	
-}
