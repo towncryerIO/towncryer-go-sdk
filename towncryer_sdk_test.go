@@ -15,9 +15,7 @@ func TestTowncryerSdk(t *testing.T) {
 
 	// Act-Assert:
 
-	// get customers api
 	assert.NotNil(t, towncryerSdk.CustomersApi())
-
 	assert.NotNil(t, towncryerSdk.EventsApi())
-
+	assert.NotNil(t, towncryerSdk.MessagesApi())
 }
