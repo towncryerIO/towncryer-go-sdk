@@ -154,3 +154,93 @@ func TestSendMessages(t *testing.T) {
 		})
 	}
 }
+
+func TestSendBulkMessages(t *testing.T) {
+	emailOnlyPayload := &models.SendMessagesPayload{
+		Emails: []models.SendEmailPayload{
+			{
+				Title:   "Welcome",
+				Content: "Hello!",
+				From:    models.EmailFrom{Name: "Acme", Email: "no-reply@acme.com"},
+				Recipients: []models.EmailRecipient{
+					{Name: "Ada", Email: "ada@example.com"},
+				},
+			},
+		},
+	}
+
+	scenarios := []struct {
+		name         string
+		payload      *models.SendMessagesPayload
+		mockResponse helpers.MockResponse
+		expected     *models.ScheduleInfo
+		errorIsNil   bool
+	}{
+		{
+			name:    "should send an email-only payload successfully",
+			payload: emailOnlyPayload,
+			mockResponse: helpers.MockResponse{
+				StatusCode: http.StatusOK,
+				Payload:    []byte(`{"jobId": "job_789", "status": "queued"}`),
+			},
+			expected:   &models.ScheduleInfo{JobId: "job_789", Status: "queued"},
+			errorIsNil: true,
+		},
+		{
+			name:       "should return error because payload is nil",
+			payload:    nil,
+			errorIsNil: false,
+		},
+		{
+			name:       "should return error because no message channel is present",
+			payload:    &models.SendMessagesPayload{},
+			errorIsNil: false,
+		},
+		{
+			name:    "should return error because server returned a non-200 status code",
+			payload: emailOnlyPayload,
+			mockResponse: helpers.MockResponse{
+				StatusCode: http.StatusInternalServerError,
+				Payload:    []byte(`{"code": "500", "message": "internal server error"}`),
+			},
+			errorIsNil: false,
+		},
+	}
+	for _, scenario := range scenarios {
+		t.Run(scenario.name, func(t *testing.T) {
+			config, server := helpers.CreateHttpServer(
+				t,
+				"/messages",
+				scenario.mockResponse.StatusCode,
+				scenario.mockResponse.Payload,
+			)
+			defer server.Close()
+
+			result, err := apis.NewMessages(config).SendBulkMessages(context.Background(), scenario.payload)
+
+			assert.Equal(t, scenario.errorIsNil, err == nil, err)
+			assert.Equal(t, scenario.expected, result)
+		})
+	}
+}
+
+func TestSendMessageEmailOnly(t *testing.T) {
+	config, server := helpers.CreateHttpServer(
+		t,
+		"/messages",
+		http.StatusOK,
+		[]byte(`{"code": "00", "message": "success", "data": {"id": "abc", "status": "pending"}}`),
+	)
+	defer server.Close()
+
+	response, err := apis.NewMessages(config).SendEmail(
+		context.Background(),
+		models.EmailFrom{Name: "Acme", Email: "no-reply@acme.com"},
+		models.EmailRecipient{Name: "Ada", Email: "ada@example.com"},
+		"Welcome",
+		"Hello!",
+	)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "abc", response.Data.Id)
+}

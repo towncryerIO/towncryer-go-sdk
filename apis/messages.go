@@ -25,11 +25,7 @@ func (m *Messages) SendMessage(
 	ctx context.Context,
 	payload *models.SendMessagesPayload,
 ) (*models.ApiResponse[models.SendMessageResponsePayload], error) {
-	if len(payload.Emails) == 0 && len(payload.PushNotifications) == 0 ||
-		len(payload.PushNotifications) == 0 {
-		return nil, ErrNoMessagesSetInPayload
-	}
-	if err := validatePayload(payload); err != nil {
+	if err := checkMessagesPayload(payload); err != nil {
 		return nil, err
 	}
 
@@ -44,6 +40,36 @@ func (m *Messages) SendMessage(
 	}
 
 	return response, nil
+}
+
+// SendBulkMessages sends a batch of emails, SMS, and/or push notifications in a single call
+// and returns the resulting job's schedule info.
+func (m *Messages) SendBulkMessages(
+	ctx context.Context,
+	payload *models.SendMessagesPayload,
+) (*models.ScheduleInfo, error) {
+	if err := checkMessagesPayload(payload); err != nil {
+		return nil, err
+	}
+
+	response := &models.ScheduleInfo{}
+	err := m.requestsBuilder.
+		BodyJSON(payload).
+		ToJSON(response).
+		Post().
+		Fetch(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+func checkMessagesPayload(payload *models.SendMessagesPayload) error {
+	if payload == nil || len(payload.Emails) == 0 && len(payload.PushNotifications) == 0 && len(payload.SMSes) == 0 {
+		return ErrNoMessagesSetInPayload
+	}
+	return validatePayload(payload)
 }
 
 func (m *Messages) SendEmail(
