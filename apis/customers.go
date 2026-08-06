@@ -7,9 +7,18 @@ import (
 	"github.com/volvlabs/towncryer-sdk/models"
 )
 
+// CustomersAPI is the interface satisfied by Customers, the Customers API client.
+// Consumers should depend on this interface rather than the concrete type so that
+// a generated mock (see the mocks package) can be substituted in their own tests.
+type CustomersAPI interface {
+	CreateCustomer(ctx context.Context, payload *models.CreateCustomerPayload) (*models.ApiResponse[models.Customer], error)
+}
+
 type Customers struct {
 	*BaseAPI
 }
+
+var _ CustomersAPI = (*Customers)(nil)
 
 // CreateCustomer is idempotent (customers are keyed by CustomerId), so retries are
 // safe and enabled by default.

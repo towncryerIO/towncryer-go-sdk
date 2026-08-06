@@ -7,9 +7,18 @@ import (
 	"github.com/volvlabs/towncryer-sdk/models"
 )
 
+// EventsAPI is the interface satisfied by Events, the Events API client.
+// Consumers should depend on this interface rather than the concrete type so that
+// a generated mock (see the mocks package) can be substituted in their own tests.
+type EventsAPI interface {
+	PublishEvent(ctx context.Context, payload *models.PublishEventPayload) (*models.ApiResponse[map[string]any], error)
+}
+
 type Events struct {
 	*BaseAPI
 }
+
+var _ EventsAPI = (*Events)(nil)
 
 // PublishEvent is not naturally idempotent: a retried request can cause the server to
 // publish the same event twice. Retries are therefore only applied for this endpoint if
