@@ -83,6 +83,40 @@ if err != nil {
 }
 ```
 
+## Error Handling
+
+Every SDK call returns a plain `error`, but errors coming back from the Towncryer API itself are always wrapped in a `*towncryer.APIError`, which carries the HTTP status code, the API's own error code and message, and any field-level validation errors from the response body. This lets you branch on the failure without string-matching the error message:
+
+```go
+import (
+    "errors"
+
+    "github.com/volvlabs/towncryer-sdk"
+)
+
+response, err := sdk.CustomersApi().CreateCustomer(ctx, customerPayload)
+if err != nil {
+    var apiErr *towncryer.APIError
+    if errors.As(err, &apiErr) {
+        switch apiErr.StatusCode {
+        case 401:
+            // bad credentials
+        case 400:
+            // validation failure — apiErr.Errors has the field-level detail
+        default:
+            // other API-level failure
+        }
+        return
+    }
+
+    // err is not an *APIError, so it's a network-level failure
+    // (e.g. connection refused, timeout, DNS failure) rather than
+    // a response from the Towncryer API.
+}
+```
+
+`errors.As` returns `false` for network-level failures (the request never reached the API, or never got a response), so those remain distinguishable from API-level failures without any extra type on your end.
+
 ## Contributing
 
 If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on the [Towncryer SDK repository](https://github.com/volvlabs/towncryer-sdk).

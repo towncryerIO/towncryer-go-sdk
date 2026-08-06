@@ -1,7 +1,9 @@
 package apis
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"runtime"
 
@@ -44,6 +46,36 @@ func NewBaseAPI(config *config.Configuration, endpoint string) *BaseAPI {
 		ContentType("application/json").
 		Accept("application/json").
 		Transport(RetryTransport()).
-		Transport(RateLimitTransport(nil))
+		Transport(RateLimitTransport(nil)).
+		AddValidator(apiErrorValidator)
 	return &BaseAPI{config: config, requestsBuilder: requestsBuilder}
+}
+
+// apiErrorBody mirrors the error-carrying fields of models.ApiResponse, without
+// requiring a type parameter for the (irrelevant, on an error path) data payload.
+type apiErrorBody struct {
+	Code    string   `json:"code"`
+	Message string   `json:"message"`
+	Errors  []string `json:"errors"`
+}
+
+// apiErrorValidator replaces the default 2xx status check so that non-2xx
+// responses are decoded into an *APIError, preserving the status code and any
+// error detail the API reported in the response body.
+func apiErrorValidator(res *http.Response) error {
+	if res.StatusCode >= 200 && res.StatusCode < 300 {
+		return nil
+	}
+
+	body, _ := io.ReadAll(res.Body)
+
+	var decoded apiErrorBody
+	_ = json.Unmarshal(body, &decoded)
+
+	return &APIError{
+		StatusCode: res.StatusCode,
+		Code:       decoded.Code,
+		Message:    decoded.Message,
+		Errors:     decoded.Errors,
+	}
 }
