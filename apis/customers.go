@@ -11,8 +11,10 @@ type Customers struct {
 	*BaseAPI
 }
 
+// CreateCustomer is idempotent (customers are keyed by CustomerId), so retries are
+// safe and enabled by default.
 func NewCustomers(config *config.Configuration) *Customers {
-	return &Customers{BaseAPI: NewBaseAPI(config, "customers")}
+	return &Customers{BaseAPI: NewBaseAPI(config, "customers", true)}
 }
 
 func (c *Customers) CreateCustomer(ctx context.Context, payload *models.CreateCustomerPayload) (*models.ApiResponse[models.Customer], error) {

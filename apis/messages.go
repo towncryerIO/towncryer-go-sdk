@@ -16,7 +16,7 @@ type Messages struct {
 
 func NewMessages(config *config.Configuration) *Messages {
 	m := &Messages{
-		BaseAPI: NewBaseAPI(config, "messages"),
+		BaseAPI: NewBaseAPI(config, "messages", config.EnableRetriesForNonIdempotentRequests),
 	}
 	return m
 }

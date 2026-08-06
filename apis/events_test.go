@@ -3,10 +3,12 @@ package apis_test
 import (
 	"context"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/volvlabs/towncryer-sdk/apis"
+	"github.com/volvlabs/towncryer-sdk/config"
 	"github.com/volvlabs/towncryer-sdk/internal/helpers"
 	"github.com/volvlabs/towncryer-sdk/models"
 )
@@ -95,6 +97,52 @@ func TestPublishEvent(t *testing.T) {
 			// Assert:
 			assert.Equal(t, scenario.errorIsNil, err == nil, err)
 			assert.Equal(t, scenario.expectedApiResponse, apiResponse)
+		})
+	}
+}
+
+func TestPublishEventRetryOptIn(t *testing.T) {
+	payload := &models.PublishEventPayload{
+		Name: "UserRegisteredEvent",
+		Customer: models.CreateCustomerPayload{
+			CustomerId: "CUST-1234",
+			FirstName:  "John",
+			LastName:   "Doe",
+		},
+	}
+
+	scenarios := []struct {
+		name            string
+		optIn           bool
+		expectedAttempt int
+	}{
+		{name: "should not retry by default", optIn: false, expectedAttempt: 1},
+		{name: "should retry when explicitly opted in", optIn: true, expectedAttempt: apis.DefaultMaxRetries},
+	}
+
+	for _, scenario := range scenarios {
+		t.Run(scenario.name, func(t *testing.T) {
+			// Arrange:
+			requestCount := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requestCount++
+				w.WriteHeader(http.StatusInternalServerError)
+			}))
+			defer server.Close()
+
+			cfg := &config.Configuration{
+				BaseUrl:                               server.URL,
+				ApiKey:                                "dummy_api_key",
+				ApiSecret:                             "dummy_api_secret",
+				EnableRetriesForNonIdempotentRequests: scenario.optIn,
+			}
+
+			// Act:
+			_, err := apis.NewEvents(cfg).PublishEvent(context.Background(), payload)
+
+			// Assert:
+			assert.Error(t, err)
+			assert.Equal(t, scenario.expectedAttempt, requestCount)
 		})
 	}
 }

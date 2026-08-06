@@ -144,7 +144,7 @@ func TestRetryTransport(t *testing.T) {
 
 			// Act:
 			requests.URL(server.URL).
-				Transport(apis.RetryTransport(apis.DefaultMaxRetries, apis.DefaultRetryDelay)).
+				Transport(apis.RetryTransport(nil, apis.DefaultMaxRetries, apis.DefaultRetryDelay)).
 				ToString(&response).
 				//nolint:errcheck
 				Fetch(ctx)

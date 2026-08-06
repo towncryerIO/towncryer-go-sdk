@@ -27,6 +27,15 @@ const (
 // HTTPClient, if set, is used for all outgoing requests instead of
 // http.DefaultClient. This allows consumers to inject a custom transport,
 // e.g. for proxies in production or mock transports in tests.
+//
+// EnableRetriesForNonIdempotentRequests controls whether the retry transport is
+// applied to send/publish endpoints (Events.PublishEvent, Messages.SendMessage,
+// Messages.SendBulkMessages) that are not naturally idempotent. Because the
+// Towncryer API does not yet support idempotency keys, a retried request that
+// reached the server before timing out can cause a duplicate event/message with
+// no way for the server to dedupe it. Retries for these endpoints are therefore
+// opt-in and default to false; enable this only if your application can
+// tolerate occasional duplicate sends.
 type Configuration struct {
 	ApiKey    string
 	ApiSecret string
@@ -44,6 +53,9 @@ type Configuration struct {
 
 	// HTTPClient optionally supplies the client (and its Transport) used for requests.
 	HTTPClient *http.Client
+
+	// EnableRetriesForNonIdempotentRequests opts send/publish endpoints in to retries.
+	EnableRetriesForNonIdempotentRequests bool
 }
 
 // WithEnvDefaults returns a copy of cfg with any blank ApiKey, ApiSecret,

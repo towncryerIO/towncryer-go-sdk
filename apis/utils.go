@@ -84,14 +84,19 @@ func PayloadSizeLimitTransport(rt http.RoundTripper) http.RoundTripper {
 // waiting retryDelay between attempts.
 //
 // Parameters:
+//   - rt (http.RoundTripper): The underlying RoundTripper to wrap. If nil, it defaults
+//     to http.DefaultTransport.
 //   - maxRetries (int): The maximum number of attempts made for a single request.
 //   - retryDelay (time.Duration): The fixed delay between retry attempts.
 //
 // Returns:
 //   - http.RoundTripper: A RoundTripper configured to retry requests based on a single,
 //     unambiguous retry rule.
-func RetryTransport(maxRetries int, retryDelay time.Duration) http.RoundTripper {
-	return trip.Default(
+//
+// Only apply this to idempotent requests (safe to send more than once). Retrying a
+// non-idempotent send/publish call can cause the server to process it more than once.
+func RetryTransport(rt http.RoundTripper, maxRetries int, retryDelay time.Duration) http.RoundTripper {
+	return trip.New(rt,
 		trip.Retry(maxRetries, retryDelay, trip.RetryableStatusCodes...),
 	)
 }
