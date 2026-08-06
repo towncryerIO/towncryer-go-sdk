@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"time"
 
 	"github.com/carlmjohnson/requests"
 	"github.com/go-playground/validator/v10"
@@ -78,22 +79,19 @@ func RateLimitTransport(rt http.RoundTripper) http.RoundTripper {
 }
 
 // RetryTransport configures an HTTP RoundTripper with retry logic. It automatically retries
-// requests on certain HTTP status codes, up to a maximum number of retry attempts defined by
-// MAX_NO_OF_RETRIES, with a delay between retries defined by RETRY_DELAY.
+// requests that fail with a network error or receive a retryable HTTP status code (e.g. 429
+// Too Many Requests, or any other code in trip.RetryableStatusCodes), up to maxRetries times,
+// waiting retryDelay between attempts.
+//
+// Parameters:
+//   - maxRetries (int): The maximum number of attempts made for a single request.
+//   - retryDelay (time.Duration): The fixed delay between retry attempts.
 //
 // Returns:
-//   - http.RoundTripper: A RoundTripper configured to retry requests based on predefined rules.
-//
-// Behavior:
-//
-//	RetryTransport retries requests that receive retryable HTTP status codes (e.g., 429 for
-//	Too Many Requests or other codes in trip.RetryableStatusCodes) up to MAX_NO_OF_RETRIES times.
-//	It uses RETRY_DELAY as the delay between retry attempts. If the maximum retries are reached
-//	without a successful response, it stops retrying.
-func RetryTransport() http.RoundTripper {
+//   - http.RoundTripper: A RoundTripper configured to retry requests based on a single,
+//     unambiguous retry rule.
+func RetryTransport(maxRetries int, retryDelay time.Duration) http.RoundTripper {
 	return trip.Default(
-		trip.Retry(MAX_NO_OF_RETRIES, RETRY_DELAY),
-		trip.Retry(MAX_NO_OF_RETRIES, RETRY_DELAY, http.StatusTooManyRequests),
-		trip.Retry(MAX_NO_OF_RETRIES, RETRY_DELAY, trip.RetryableStatusCodes...),
+		trip.Retry(maxRetries, retryDelay, trip.RetryableStatusCodes...),
 	)
 }

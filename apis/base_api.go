@@ -38,6 +38,21 @@ type BaseAPI struct {
 //   - *BaseAPI: A pointer to the initialized BaseAPI instance with configured
 //     headers, content types, retry, and rate limit transports.
 func NewBaseAPI(config *config.Configuration, endpoint string) *BaseAPI {
+	timeout := config.Timeout
+	if timeout <= 0 {
+		timeout = DEFAULT_TIMEOUT
+	}
+
+	maxRetries := config.MaxRetries
+	if maxRetries <= 0 {
+		maxRetries = DEFAULT_MAX_RETRIES
+	}
+
+	retryDelay := config.RetryDelay
+	if retryDelay <= 0 {
+		retryDelay = DEFAULT_RETRY_DELAY
+	}
+
 	userAgent := fmt.Sprintf("TowncryerSDK/0.0.1 (Go/%s; %s/%s)", runtime.Version(), runtime.GOOS, runtime.GOARCH)
 	requestsBuilder := requests.URL(fmt.Sprintf("%s/%s", config.BaseUrl, endpoint)).
 		Header(API_HEADER_KEY, config.ApiKey).
@@ -45,7 +60,8 @@ func NewBaseAPI(config *config.Configuration, endpoint string) *BaseAPI {
 		Header(http.CanonicalHeaderKey("User-Agent"), userAgent).
 		ContentType("application/json").
 		Accept("application/json").
-		Transport(RetryTransport()).
+		Client(&http.Client{Timeout: timeout}).
+		Transport(RetryTransport(maxRetries, retryDelay)).
 		Transport(RateLimitTransport(nil)).
 		AddValidator(apiErrorValidator)
 	return &BaseAPI{config: config, requestsBuilder: requestsBuilder}

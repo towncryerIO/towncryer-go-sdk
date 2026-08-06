@@ -111,12 +111,12 @@ func TestRetryTransport(t *testing.T) {
 		{
 			name:            "Retry on TooManyRequests",
 			statusCode:      http.StatusTooManyRequests,
-			expectedRetries: apis.MAX_NO_OF_RETRIES,
+			expectedRetries: apis.DEFAULT_MAX_RETRIES,
 		},
 		{
 			name:            "Retry on RetryableStatusCode",
 			statusCode:      http.StatusInternalServerError,
-			expectedRetries: apis.MAX_NO_OF_RETRIES,
+			expectedRetries: apis.DEFAULT_MAX_RETRIES,
 		},
 		{
 			name:            "No retry on 200 OK",
@@ -144,7 +144,7 @@ func TestRetryTransport(t *testing.T) {
 
 			// Act:
 			requests.URL(server.URL).
-				Transport(apis.RetryTransport()).
+				Transport(apis.RetryTransport(apis.DEFAULT_MAX_RETRIES, apis.DEFAULT_RETRY_DELAY)).
 				ToString(&response).
 				//nolint:errcheck
 				Fetch(ctx)
