@@ -6,10 +6,35 @@ import (
 	"io"
 	"net/http"
 	"runtime"
+	"runtime/debug"
 
 	"github.com/carlmjohnson/requests"
 	"github.com/volvlabs/towncryer-sdk/config"
 )
+
+const sdkModulePath = "github.com/volvlabs/towncryer-sdk"
+
+// sdkVersion returns the version of this module as recorded by the Go module
+// system in the consuming binary's build info, falling back to "dev" when
+// that information isn't available (e.g. when running the SDK's own tests).
+func sdkVersion() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "dev"
+	}
+
+	if info.Main.Path == sdkModulePath && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		return info.Main.Version
+	}
+
+	for _, dep := range info.Deps {
+		if dep.Path == sdkModulePath {
+			return dep.Version
+		}
+	}
+
+	return "dev"
+}
 
 // BaseAPI represents the base configuration for interacting with the API,
 // including essential configurations and request setup for consistent behavior
@@ -40,29 +65,29 @@ type BaseAPI struct {
 func NewBaseAPI(config *config.Configuration, endpoint string) *BaseAPI {
 	timeout := config.Timeout
 	if timeout <= 0 {
-		timeout = DEFAULT_TIMEOUT
+		timeout = DefaultTimeout
 	}
 
 	maxRetries := config.MaxRetries
 	if maxRetries <= 0 {
-		maxRetries = DEFAULT_MAX_RETRIES
+		maxRetries = DefaultMaxRetries
 	}
 
 	retryDelay := config.RetryDelay
 	if retryDelay <= 0 {
-		retryDelay = DEFAULT_RETRY_DELAY
+		retryDelay = DefaultRetryDelay
 	}
 
-	userAgent := fmt.Sprintf("TowncryerSDK/0.0.1 (Go/%s; %s/%s)", runtime.Version(), runtime.GOOS, runtime.GOARCH)
+	userAgent := fmt.Sprintf("TowncryerSDK/%s (Go/%s; %s/%s)", sdkVersion(), runtime.Version(), runtime.GOOS, runtime.GOARCH)
 	requestsBuilder := requests.URL(fmt.Sprintf("%s/%s", config.BaseUrl, endpoint)).
-		Header(API_HEADER_KEY, config.ApiKey).
-		Header(API_HEADER_SECRET_KEY, config.ApiSecret).
+		Header(APIHeaderKey, config.ApiKey).
+		Header(APIHeaderSecretKey, config.ApiSecret).
 		Header(http.CanonicalHeaderKey("User-Agent"), userAgent).
 		ContentType("application/json").
 		Accept("application/json").
 		Client(&http.Client{Timeout: timeout}).
 		Transport(RetryTransport(maxRetries, retryDelay)).
-		Transport(RateLimitTransport(nil)).
+		Transport(PayloadSizeLimitTransport(nil)).
 		AddValidator(apiErrorValidator)
 	return &BaseAPI{config: config, requestsBuilder: requestsBuilder}
 }

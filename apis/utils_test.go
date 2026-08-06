@@ -22,7 +22,7 @@ func (m *MockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return m.RoundTripFn(req)
 }
 
-func TestRateLimitTransport(t *testing.T) {
+func TestPayloadSizeLimitTransport(t *testing.T) {
 	scenarios := []struct {
 		name        string
 		payload     string
@@ -37,7 +37,7 @@ func TestRateLimitTransport(t *testing.T) {
 		},
 		{
 			name:        "should fail - payload exceeds limit",
-			payload:     strings.Repeat("a", apis.MAX_REQUEST_PAYLOAD_SIZE+1),
+			payload:     strings.Repeat("a", apis.MaxRequestPayloadSize+1),
 			wantErr:     apis.ErrRequestPayloadLimitReached,
 			contentType: "application/json",
 		},
@@ -49,7 +49,7 @@ func TestRateLimitTransport(t *testing.T) {
 		},
 		{
 			name:        "should pass - payload at exact limit",
-			payload:     strings.Repeat("a", apis.MAX_REQUEST_PAYLOAD_SIZE),
+			payload:     strings.Repeat("a", apis.MaxRequestPayloadSize),
 			wantErr:     nil,
 			contentType: "application/json",
 		},
@@ -75,7 +75,7 @@ func TestRateLimitTransport(t *testing.T) {
 			req.Header.Set("Content-Type", scenario.contentType)
 			req.ContentLength = int64(len(scenario.payload))
 
-			transport := apis.RateLimitTransport(mockTransport)
+			transport := apis.PayloadSizeLimitTransport(mockTransport)
 			resp, err := transport.RoundTrip(req)
 
 			// Assert:
@@ -96,8 +96,8 @@ func TestRateLimitTransport(t *testing.T) {
 	}
 }
 
-func TestRateLimitTransportNilTransport(t *testing.T) {
-	transport := apis.RateLimitTransport(nil)
+func TestPayloadSizeLimitTransportNilTransport(t *testing.T) {
+	transport := apis.PayloadSizeLimitTransport(nil)
 
 	assert.NotNil(t, transport)
 }
@@ -111,12 +111,12 @@ func TestRetryTransport(t *testing.T) {
 		{
 			name:            "Retry on TooManyRequests",
 			statusCode:      http.StatusTooManyRequests,
-			expectedRetries: apis.DEFAULT_MAX_RETRIES,
+			expectedRetries: apis.DefaultMaxRetries,
 		},
 		{
 			name:            "Retry on RetryableStatusCode",
 			statusCode:      http.StatusInternalServerError,
-			expectedRetries: apis.DEFAULT_MAX_RETRIES,
+			expectedRetries: apis.DefaultMaxRetries,
 		},
 		{
 			name:            "No retry on 200 OK",
@@ -144,7 +144,7 @@ func TestRetryTransport(t *testing.T) {
 
 			// Act:
 			requests.URL(server.URL).
-				Transport(apis.RetryTransport(apis.DEFAULT_MAX_RETRIES, apis.DEFAULT_RETRY_DELAY)).
+				Transport(apis.RetryTransport(apis.DefaultMaxRetries, apis.DefaultRetryDelay)).
 				ToString(&response).
 				//nolint:errcheck
 				Fetch(ctx)

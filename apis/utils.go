@@ -37,8 +37,8 @@ func validatePayload(payload any) error {
 	return validate.Struct(payload)
 }
 
-// RateLimitTransport wraps an existing http.RoundTripper to enforce request payload size limits.
-// It limits the size of request bodies to a maximum defined by MAX_REQUEST_PAYLOAD_SIZE.
+// PayloadSizeLimitTransport wraps an existing http.RoundTripper to enforce request payload size limits.
+// It limits the size of request bodies to a maximum defined by MaxRequestPayloadSize.
 //
 // Parameters:
 //   - rt (http.RoundTripper): The underlying RoundTripper to wrap. If nil, it defaults
@@ -49,10 +49,10 @@ func validatePayload(payload any) error {
 //
 // Behavior:
 //
-//	If the request payload exceeds MAX_REQUEST_PAYLOAD_SIZE, RateLimitTransport will return
+//	If the request payload exceeds MaxRequestPayloadSize, PayloadSizeLimitTransport will return
 //	an error (ErrRequestPayloadLimitReached) without sending the request. If the payload size
 //	is within the limit, it passes the request through to the underlying RoundTripper.
-func RateLimitTransport(rt http.RoundTripper) http.RoundTripper {
+func PayloadSizeLimitTransport(rt http.RoundTripper) http.RoundTripper {
 	if rt == nil {
 		rt = http.DefaultTransport
 	}
@@ -60,14 +60,14 @@ func RateLimitTransport(rt http.RoundTripper) http.RoundTripper {
 	return requests.RoundTripFunc(func(req *http.Request) (res *http.Response, err error) {
 		if req.Body != nil {
 			var bodyBuffer bytes.Buffer
-			limitReader := io.LimitReader(req.Body, int64(MAX_REQUEST_PAYLOAD_SIZE)+1)
+			limitReader := io.LimitReader(req.Body, int64(MaxRequestPayloadSize)+1)
 
 			written, err := io.Copy(&bodyBuffer, limitReader)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read request body: %w", err)
 			}
 
-			if written > int64(MAX_REQUEST_PAYLOAD_SIZE) {
+			if written > int64(MaxRequestPayloadSize) {
 				return nil, ErrRequestPayloadLimitReached
 			}
 
