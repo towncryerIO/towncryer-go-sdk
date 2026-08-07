@@ -5,16 +5,16 @@ import (
 	"github.com/volvlabs/towncryer-sdk/config"
 )
 
-// TowncryerSdk is the main SDK struct for interacting with the Towncryer APIs. It provides access to various
-// API services (e.g., Customers and Events), which are constructed eagerly in New() so that they are safe
-// to access concurrently. This SDK is configured using the provided `config.Configuration`.
+// TowncryerSdk is the main SDK struct for interacting with the Towncryer APIs. It exposes each API
+// service (e.g., Customers, Events and Messages) as a public field, constructed eagerly in New() so that
+// they are safe to access concurrently. This SDK is configured using the provided `config.Configuration`.
 
 type TowncryerSdk struct {
 	cfg *config.Configuration
 
-	customersApi *apis.Customers
-	eventsApi    *apis.Events
-	messagesApi  *apis.Messages
+	Customers apis.CustomersAPI
+	Events    apis.EventsAPI
+	Messages  apis.MessagesAPI
 }
 
 // New initializes a new instance of the TowncryerSdk with the given configuration.
@@ -28,36 +28,9 @@ type TowncryerSdk struct {
 func New(cfg *config.Configuration) *TowncryerSdk {
 	resolved := cfg.WithEnvDefaults()
 	return &TowncryerSdk{
-		cfg:          &resolved,
-		customersApi: apis.NewCustomers(&resolved),
-		eventsApi:    apis.NewEvents(&resolved),
-		messagesApi:  apis.NewMessages(&resolved),
+		cfg:       &resolved,
+		Customers: apis.NewCustomers(&resolved),
+		Events:    apis.NewEvents(&resolved),
+		Messages:  apis.NewMessages(&resolved),
 	}
-}
-
-// CustomersApi returns an instance of the Customers API client. The Customers API client is used
-// for all customer-related interactions with the Towncryer API, such as managing customer data and retrieving information.
-//
-// Returns:
-//   - A pointer to an `apis.Customers` instance.
-func (t *TowncryerSdk) CustomersApi() *apis.Customers {
-	return t.customersApi
-}
-
-// EventsApi returns an instance of the Events API client. The Events API client is used
-// for managing and querying event-related data in the Towncryer API.
-//
-// Returns:
-//   - A pointer to an `apis.Events` instance.
-func (t *TowncryerSdk) EventsApi() *apis.Events {
-	return t.eventsApi
-}
-
-// MessagesApi returns an instance of the Messages API client, used for sending emails, SMS,
-// and push notifications through the Towncryer API.
-//
-// Returns:
-//   - A pointer to an `apis.Messages` instance.
-func (t *TowncryerSdk) MessagesApi() *apis.Messages {
-	return t.messagesApi
 }
