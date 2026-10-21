@@ -1,6 +1,6 @@
 # Towncryer SDK
 
-The Towncryer SDK is a Go library that provides a convenient way to interact with the Towncryer API. It offers a set of API clients for various Towncryer services, such as Customers and Events, allowing you to easily manage your application's interactions with the Towncryer platform.
+The Towncryer SDK is a Go library that provides a convenient way to interact with the Towncryer API. It offers a set of API clients for various Towncryer services, such as Customers, Events, and Messages, allowing you to easily manage your application's interactions with the Towncryer platform.
 
 ## Installation
 
@@ -83,6 +83,33 @@ if err != nil {
 }
 ```
 
+### Messages API
+
+The Messages API client provides methods for sending emails, SMS, and push notifications in a single bulk call.
+
+```go
+// Send a bulk batch of messages
+messagesPayload := &models.SendMessagesPayload{
+    Emails: []models.SendEmailPayload{
+        {
+            From:  models.EmailFrom{Name: "Acme", Email: "no-reply@acme.com"},
+            Recipients: []models.EmailRecipient{
+                {Name: "John Doe", Email: "john.doe@example.com"},
+            },
+            Title:   "Welcome!",
+            Content: "Thanks for signing up.",
+        },
+    },
+}
+
+scheduleInfo, err := sdk.MessagesApi().SendBulkMessages(ctx, messagesPayload)
+if err != nil {
+    // Handle error
+}
+
+fmt.Println(scheduleInfo.JobId, scheduleInfo.Status)
+```
+
 ## Error Handling
 
 Every SDK call returns a plain `error`, but errors coming back from the Towncryer API itself are always wrapped in a `*towncryer.APIError`, which carries the HTTP status code, the API's own error code and message, and any field-level validation errors from the response body. This lets you branch on the failure without string-matching the error message:
@@ -117,10 +144,3 @@ if err != nil {
 
 `errors.As` returns `false` for network-level failures (the request never reached the API, or never got a response), so those remain distinguishable from API-level failures without any extra type on your end.
 
-## Contributing
-
-If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request on the [Towncryer SDK repository](https://github.com/volvlabs/towncryer-sdk).
-
-## License
-
-The Towncryer SDK is licensed under the [MIT License](LICENSE).

@@ -30,6 +30,7 @@ func New(cfg *config.Configuration) *TowncryerSdk {
 		cfg:          cfg,
 		customersApi: apis.NewCustomers(cfg),
 		eventsApi:    apis.NewEvents(cfg),
+		messagesApi:  apis.NewMessages(cfg),
 	}
 }
 
@@ -51,10 +52,11 @@ func (t *TowncryerSdk) EventsApi() *apis.Events {
 	return t.eventsApi
 }
 
+// MessagesApi returns an instance of the Messages API client, used for sending emails, SMS,
+// and push notifications through the Towncryer API.
+//
+// Returns:
+//   - A pointer to an `apis.Messages` instance.
 func (t *TowncryerSdk) MessagesApi() *apis.Messages {
-	if t.messagesApi == nil {
-		t.messagesApi = apis.NewMessages(t.cfg)
-	}
-
 	return t.messagesApi
 }
