@@ -1,7 +1,9 @@
 package apis_test
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -44,4 +46,50 @@ func TestDefaultTimeoutAppliedWithoutContextDeadline(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Less(t, elapsed, 1*time.Second, "request should fail within the configured timeout instead of hanging")
+}
+
+// mockRoundTripper lets a test stub out HTTP responses without making a real
+// network connection.
+type mockRoundTripper struct {
+	response *http.Response
+	requests []*http.Request
+}
+
+func (m *mockRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	m.requests = append(m.requests, req)
+	return m.response, nil
+}
+
+func TestNewBaseAPI_UsesInjectedHTTPClient(t *testing.T) {
+	// Arrange: a client whose transport never touches the network.
+	mockTransport := &mockRoundTripper{
+		response: &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(bytes.NewBufferString(`{"code":"00","message":"ok","data":{}}`)),
+			Header:     http.Header{"Content-Type": []string{"application/json"}},
+		},
+	}
+	cfg := &config.Configuration{
+		BaseUrl:    "https://unreachable.invalid",
+		ApiKey:     "dummy_api_key",
+		ApiSecret:  "dummy_api_secret",
+		HTTPClient: &http.Client{Transport: mockTransport},
+	}
+
+	eventsApi := apis.NewEvents(cfg)
+
+	// Act:
+	_, err := eventsApi.PublishEvent(context.Background(), &models.PublishEventPayload{
+		Name: "test-event",
+		Customer: models.CreateCustomerPayload{
+			CustomerId: "CUST-12345",
+			FirstName:  "John",
+			LastName:   "Doe",
+		},
+	})
+
+	// Assert: request was routed through the injected transport, not the network.
+	assert.NoError(t, err)
+	assert.Len(t, mockTransport.requests, 1)
+	assert.Equal(t, "unreachable.invalid", mockTransport.requests[0].URL.Host)
 }

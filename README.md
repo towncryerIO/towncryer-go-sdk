@@ -33,6 +33,34 @@ sdk := towncryer.New(cfg)
 
 Once you have the SDK instance, you can access the various API clients and start interacting with the Towncryer API.
 
+### Configuration via environment variables
+
+`config.Configuration` fields fall back to environment variables when left
+blank, so a zero-value configuration works out of the box:
+
+```go
+// TOWNCRYER_API_KEY, TOWNCRYER_API_SECRET, and TOWNCRYER_BASE_URL are read
+// automatically when the corresponding struct fields are empty.
+sdk := towncryer.New(&config.Configuration{})
+```
+
+### Injecting a custom HTTP client
+
+Set `HTTPClient` to use your own `http.Client`/`http.RoundTripper`, e.g. for
+a custom proxy in production, or a mock transport in tests so no real
+network connection is made:
+
+```go
+cfg := &config.Configuration{
+    BaseUrl:    "https://api.towncryer.com",
+    ApiKey:     "your-api-key",
+    ApiSecret:  "your-api-secret",
+    HTTPClient: &http.Client{Transport: myCustomTransport},
+}
+
+sdk := towncryer.New(cfg)
+```
+
 ### Customers API
 
 The Customers API client provides methods for managing customer data, such as creating, retrieving, and updating customers.

@@ -26,11 +26,12 @@ type TowncryerSdk struct {
 // Returns:
 //   - A pointer to a newly created `TowncryerSdk` instance.
 func New(cfg *config.Configuration) *TowncryerSdk {
+	resolved := cfg.WithEnvDefaults()
 	return &TowncryerSdk{
-		cfg:          cfg,
-		customersApi: apis.NewCustomers(cfg),
-		eventsApi:    apis.NewEvents(cfg),
-		messagesApi:  apis.NewMessages(cfg),
+		cfg:          &resolved,
+		customersApi: apis.NewCustomers(&resolved),
+		eventsApi:    apis.NewEvents(&resolved),
+		messagesApi:  apis.NewMessages(&resolved),
 	}
 }
 

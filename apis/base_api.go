@@ -79,15 +79,27 @@ func NewBaseAPI(config *config.Configuration, endpoint string) *BaseAPI {
 	}
 
 	userAgent := fmt.Sprintf("TowncryerSDK/%s (Go/%s; %s/%s)", sdkVersion(), runtime.Version(), runtime.GOOS, runtime.GOARCH)
+
+	client := &http.Client{Timeout: timeout}
+	var baseTransport http.RoundTripper
+	if config.HTTPClient != nil {
+		injected := *config.HTTPClient
+		if injected.Timeout <= 0 {
+			injected.Timeout = timeout
+		}
+		client = &injected
+		baseTransport = injected.Transport
+	}
+
 	requestsBuilder := requests.URL(fmt.Sprintf("%s/%s", config.BaseUrl, endpoint)).
 		Header(APIHeaderKey, config.ApiKey).
 		Header(APIHeaderSecretKey, config.ApiSecret).
 		Header(http.CanonicalHeaderKey("User-Agent"), userAgent).
 		ContentType("application/json").
 		Accept("application/json").
-		Client(&http.Client{Timeout: timeout}).
+		Client(client).
 		Transport(RetryTransport(maxRetries, retryDelay)).
-		Transport(PayloadSizeLimitTransport(nil)).
+		Transport(PayloadSizeLimitTransport(baseTransport)).
 		AddValidator(apiErrorValidator)
 	return &BaseAPI{config: config, requestsBuilder: requestsBuilder}
 }
