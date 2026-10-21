@@ -75,7 +75,7 @@ customerPayload := &models.CreateCustomerPayload{
     PhoneNumber: "123-456-7890",
 }
 
-response, err := sdk.CustomersApi().CreateCustomer(ctx, customerPayload)
+response, err := sdk.Customers.CreateCustomer(ctx, customerPayload)
 if err != nil {
     // Handle error
 }
@@ -99,7 +99,7 @@ eventPayload := &models.PublishEventPayload{
     },
 }
 
-response, err := sdk.EventsApi().PublishEvent(ctx, eventPayload)
+response, err := sdk.Events.PublishEvent(ctx, eventPayload)
 if err != nil {
     // Handle error
 }
@@ -124,7 +124,7 @@ messagesPayload := &models.SendMessagesPayload{
     },
 }
 
-scheduleInfo, err := sdk.MessagesApi().SendBulkMessages(ctx, messagesPayload)
+scheduleInfo, err := sdk.Messages.SendBulkMessages(ctx, messagesPayload)
 if err != nil {
     // Handle error
 }
@@ -140,9 +140,9 @@ Retries are only safe for **idempotent** requests. Because the Towncryer API doe
 
 | Endpoint | Idempotent | Retries by default |
 | --- | --- | --- |
-| `CustomersApi().CreateCustomer` | Yes (keyed by `CustomerId`) | Yes |
-| `EventsApi().PublishEvent` | No | No |
-| `MessagesApi().SendMessage` / `SendBulkMessages` | No | No |
+| `Customers.CreateCustomer` | Yes (keyed by `CustomerId`) | Yes |
+| `Events.PublishEvent` | No | No |
+| `Messages.SendMessage` / `SendBulkMessages` | No | No |
 
 If you accept the double-send risk and want the non-idempotent endpoints to retry too, opt in explicitly:
 
@@ -163,7 +163,7 @@ import (
     "github.com/volvlabs/towncryer-sdk"
 )
 
-response, err := sdk.CustomersApi().CreateCustomer(ctx, customerPayload)
+response, err := sdk.Customers.CreateCustomer(ctx, customerPayload)
 if err != nil {
     var apiErr *towncryer.APIError
     if errors.As(err, &apiErr) {

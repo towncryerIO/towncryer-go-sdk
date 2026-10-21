@@ -33,7 +33,7 @@ func TestAPIError_ErrorsAs(t *testing.T) {
 	}
 
 	// Act:
-	_, err := sdk.EventsApi().PublishEvent(context.Background(), payload)
+	_, err := sdk.Events.PublishEvent(context.Background(), payload)
 
 	// Assert:
 	var apiErr *towncryer.APIError
