@@ -14,6 +14,7 @@ type TowncryerSdk struct {
 
 	customersApi *apis.Customers
 	eventsApi    *apis.Events
+	messagesApi  *apis.Messages
 }
 
 // New initializes a new instance of the TowncryerSdk with the given configuration.
@@ -55,4 +56,12 @@ func (t *TowncryerSdk) EventsApi() *apis.Events {
 	}
 
 	return t.eventsApi
+}
+
+func (t *TowncryerSdk) MessagesApi() *apis.Messages {
+	if t.messagesApi == nil {
+		t.messagesApi = apis.NewMessages(t.cfg)
+	}
+
+	return t.messagesApi
 }
