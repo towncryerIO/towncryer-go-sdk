@@ -11,8 +11,11 @@ type Events struct {
 	*BaseAPI
 }
 
+// PublishEvent is not naturally idempotent: a retried request can cause the server to
+// publish the same event twice. Retries are therefore only applied for this endpoint if
+// the caller has explicitly opted in via config.EnableRetriesForNonIdempotentRequests.
 func NewEvents(config *config.Configuration) *Events {
-	return &Events{BaseAPI: NewBaseAPI(config, "events")}
+	return &Events{BaseAPI: NewBaseAPI(config, "events", config.EnableRetriesForNonIdempotentRequests)}
 }
 
 func (e *Events) PublishEvent(ctx context.Context, payload *models.PublishEventPayload) (*models.ApiResponse[map[string]any], error) {

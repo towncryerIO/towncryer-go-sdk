@@ -138,6 +138,26 @@ if err != nil {
 fmt.Println(scheduleInfo.JobId, scheduleInfo.Status)
 ```
 
+## Retry behavior
+
+The SDK retries requests that fail with a network error or a retryable HTTP status code (`408`, `425`, `429`, `500`, `502`, `503`, `504`), using `MaxRetries` and `RetryDelay` from the configuration.
+
+Retries are only safe for **idempotent** requests. Because the Towncryer API does not yet support idempotency keys, retrying a **non-idempotent** request that already reached the server (e.g. after a timeout) can cause it to be processed twice, with no way for the server to dedupe it.
+
+| Endpoint | Idempotent | Retries by default |
+| --- | --- | --- |
+| `CustomersApi().CreateCustomer` | Yes (keyed by `CustomerId`) | Yes |
+| `EventsApi().PublishEvent` | No | No |
+| `MessagesApi().SendMessage` / `SendBulkMessages` | No | No |
+
+If you accept the double-send risk and want the non-idempotent endpoints to retry too, opt in explicitly:
+
+```go
+cfg := &config.Configuration{
+    EnableRetriesForNonIdempotentRequests: true,
+}
+```
+
 ## Error Handling
 
 Every SDK call returns a plain `error`, but errors coming back from the Towncryer API itself are always wrapped in a `*towncryer.APIError`, which carries the HTTP status code, the API's own error code and message, and any field-level validation errors from the response body. This lets you branch on the failure without string-matching the error message:

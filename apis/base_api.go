@@ -58,11 +58,16 @@ type BaseAPI struct {
 //     URL and authentication keys for the API.
 //   - endpoint (string): The specific API endpoint to connect to, which will
 //     be appended to the base URL.
+//   - retryable (bool): Whether the retry transport should be attached for this
+//     endpoint. This should be false for send/publish-type endpoints that are not
+//     naturally idempotent, unless the caller has explicitly opted in via
+//     config.EnableRetriesForNonIdempotentRequests (see that field for details on
+//     the double-send risk).
 //
 // Returns:
 //   - *BaseAPI: A pointer to the initialized BaseAPI instance with configured
 //     headers, content types, retry, and rate limit transports.
-func NewBaseAPI(config *config.Configuration, endpoint string) *BaseAPI {
+func NewBaseAPI(config *config.Configuration, endpoint string, retryable bool) *BaseAPI {
 	timeout := config.Timeout
 	if timeout <= 0 {
 		timeout = DefaultTimeout
@@ -91,6 +96,11 @@ func NewBaseAPI(config *config.Configuration, endpoint string) *BaseAPI {
 		baseTransport = injected.Transport
 	}
 
+	transport := PayloadSizeLimitTransport(baseTransport)
+	if retryable {
+		transport = RetryTransport(transport, maxRetries, retryDelay)
+	}
+
 	requestsBuilder := requests.URL(fmt.Sprintf("%s/%s", config.BaseUrl, endpoint)).
 		Header(APIHeaderKey, config.ApiKey).
 		Header(APIHeaderSecretKey, config.ApiSecret).
@@ -98,8 +108,7 @@ func NewBaseAPI(config *config.Configuration, endpoint string) *BaseAPI {
 		ContentType("application/json").
 		Accept("application/json").
 		Client(client).
-		Transport(RetryTransport(maxRetries, retryDelay)).
-		Transport(PayloadSizeLimitTransport(baseTransport)).
+		Transport(transport).
 		AddValidator(apiErrorValidator)
 	return &BaseAPI{config: config, requestsBuilder: requestsBuilder}
 }
