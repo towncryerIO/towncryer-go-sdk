@@ -146,3 +146,23 @@ func TestPublishEventRetryOptIn(t *testing.T) {
 		})
 	}
 }
+
+// TestPublishEvent_WithoutCustomerNames covers a customer the caller knows only
+// by email address: CustomerId is the one required field, not the names.
+func TestPublishEvent_WithoutCustomerNames(t *testing.T) {
+	config, server := helpers.CreateHttpServer(t, "/events", http.StatusOK, []byte(`
+		{"code": "00", "message": "event published successfully"}
+	`))
+	defer server.Close()
+
+	apiResponse, err := apis.NewEvents(config).PublishEvent(context.Background(), &models.PublishEventPayload{
+		Name: "UserRegisteredEvent",
+		Customer: models.CreateCustomerPayload{
+			CustomerId: "CUST-1234",
+			Email:      "nameless@example.com",
+		},
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "00", apiResponse.Code)
+}

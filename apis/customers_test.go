@@ -92,7 +92,7 @@ func TestCreateCustomer(t *testing.T) {
 			errorIsNil:          false,
 		},
 		{
-			name: "should return error because required values are not present in request payload",
+			name: "should return error because customerId is not present in request payload",
 			args: args{
 				payload: &models.CreateCustomerPayload{
 					Email:       "john.doe@example.com",
@@ -126,4 +126,21 @@ func TestCreateCustomer(t *testing.T) {
 			assert.Equal(t, scenario.expectedApiResponse, apiResponse)
 		})
 	}
+}
+
+// TestCreateCustomer_WithoutNames covers a customer the caller knows only by
+// email address: CustomerId is the one required field, not the names.
+func TestCreateCustomer_WithoutNames(t *testing.T) {
+	config, server := helpers.CreateHttpServer(t, "/customers", http.StatusOK, []byte(`
+		{"code": "00", "message": "customer created successfully"}
+	`))
+	defer server.Close()
+
+	apiResponse, err := apis.NewCustomers(config).CreateCustomer(context.Background(), &models.CreateCustomerPayload{
+		CustomerId: "CUST-12345",
+		Email:      "nameless@example.com",
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "00", apiResponse.Code)
 }
