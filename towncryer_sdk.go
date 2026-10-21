@@ -6,8 +6,8 @@ import (
 )
 
 // TowncryerSdk is the main SDK struct for interacting with the Towncryer APIs. It provides access to various
-// API services (e.g., Customers and Events) using lazy initialization, meaning that each service API is only
-// created when first accessed. This SDK is configured using the provided `config.Configuration`.
+// API services (e.g., Customers and Events), which are constructed eagerly in New() so that they are safe
+// to access concurrently. This SDK is configured using the provided `config.Configuration`.
 
 type TowncryerSdk struct {
 	cfg *config.Configuration
@@ -27,34 +27,27 @@ type TowncryerSdk struct {
 //   - A pointer to a newly created `TowncryerSdk` instance.
 func New(cfg *config.Configuration) *TowncryerSdk {
 	return &TowncryerSdk{
-		cfg: cfg,
+		cfg:          cfg,
+		customersApi: apis.NewCustomers(cfg),
+		eventsApi:    apis.NewEvents(cfg),
 	}
 }
 
-// CustomersApi returns an instance of the Customers API client. If it has not been initialized yet,
-// it will create a new instance using the provided configuration. The Customers API client is used
+// CustomersApi returns an instance of the Customers API client. The Customers API client is used
 // for all customer-related interactions with the Towncryer API, such as managing customer data and retrieving information.
 //
 // Returns:
 //   - A pointer to an `apis.Customers` instance.
 func (t *TowncryerSdk) CustomersApi() *apis.Customers {
-	if t.customersApi == nil {
-		t.customersApi = apis.NewCustomers(t.cfg)
-	}
 	return t.customersApi
 }
 
-// EventsApi returns an instance of the Events API client. If it has not been initialized yet,
-// it will create a new instance using the provided configuration. The Events API client is used
+// EventsApi returns an instance of the Events API client. The Events API client is used
 // for managing and querying event-related data in the Towncryer API.
 //
 // Returns:
 //   - A pointer to an `apis.Events` instance.
 func (t *TowncryerSdk) EventsApi() *apis.Events {
-	if t.eventsApi == nil {
-		t.eventsApi = apis.NewEvents(t.cfg)
-	}
-
 	return t.eventsApi
 }
 
