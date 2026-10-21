@@ -10,9 +10,22 @@ import (
 
 var ErrNoMessagesSetInPayload = errors.New("message payload is totally empty")
 
+// MessagesAPI is the interface satisfied by Messages, the Messages API client.
+// Consumers should depend on this interface rather than the concrete type so that
+// a generated mock (see the mocks package) can be substituted in their own tests.
+type MessagesAPI interface {
+	SendMessage(ctx context.Context, payload *models.SendMessagesPayload) (*models.ApiResponse[models.SendMessageResponsePayload], error)
+	SendBulkMessages(ctx context.Context, payload *models.SendMessagesPayload) (*models.ScheduleInfo, error)
+	SendEmail(ctx context.Context, from models.EmailFrom, to models.EmailRecipient, title string, content string) (*models.ApiResponse[models.SendMessageResponsePayload], error)
+	SendSMS(ctx context.Context, from string, to models.SMSRecipient, content string) (*models.ApiResponse[models.SendMessageResponsePayload], error)
+	SendPushNotification(ctx context.Context, to models.PushNotificationRecipient, title string, content string) (*models.ApiResponse[models.SendMessageResponsePayload], error)
+}
+
 type Messages struct {
 	*BaseAPI
 }
+
+var _ MessagesAPI = (*Messages)(nil)
 
 func NewMessages(config *config.Configuration) *Messages {
 	m := &Messages{

@@ -192,3 +192,33 @@ if err != nil {
 
 `errors.As` returns `false` for network-level failures (the request never reached the API, or never got a response), so those remain distinguishable from API-level failures without any extra type on your end.
 
+## Testing your own code against this SDK
+
+Each resource client exposes a narrow interface (`apis.CustomersAPI`, `apis.EventsAPI`, `apis.MessagesAPI`) that the real client types satisfy. Depend on these interfaces in your own code instead of the concrete `*apis.Customers` / `*apis.Events` / `*apis.Messages` types, and you can substitute a generated mock in your unit tests without spinning up an HTTP layer:
+
+```go
+import (
+    "github.com/stretchr/testify/mock"
+
+    "github.com/volvlabs/towncryer-sdk/apis"
+    "github.com/volvlabs/towncryer-sdk/mocks"
+    "github.com/volvlabs/towncryer-sdk/models"
+)
+
+// Your own code depends on the interface, not the concrete SDK type.
+type Signup struct {
+    customers apis.CustomersAPI
+}
+
+func TestSignup(t *testing.T) {
+    mockCustomers := mocks.NewMockCustomersAPI(t)
+    mockCustomers.EXPECT().
+        CreateCustomer(mock.Anything, mock.Anything).
+        Return(&models.ApiResponse[models.Customer]{}, nil)
+
+    s := Signup{customers: mockCustomers}
+    // ... exercise s and assert behavior
+}
+```
+
+Mocks are generated with [mockery](https://github.com/vektra/mockery) from the `.mockery.yaml` config in this repo; regenerate them with `mockery` after changing a resource interface.
