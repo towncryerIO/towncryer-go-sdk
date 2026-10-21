@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/volvlabs/towncryer-sdk/config"
+	"github.com/towncryerIO/towncryer-go-sdk/config"
 )
 
 func TestConfiguration_WithEnvDefaults(t *testing.T) {

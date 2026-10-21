@@ -5,7 +5,7 @@ resolve-type-alias: false
 disable-version-string: true
 issue-845-fix: true
 packages:
-  github.com/volvlabs/towncryer-sdk/apis:
+  github.com/towncryerIO/towncryer-go-sdk/apis:
     interfaces:
       CustomersAPI:
       EventsAPI:

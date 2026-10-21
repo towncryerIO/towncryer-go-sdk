@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/volvlabs/towncryer-sdk/apis"
-	"github.com/volvlabs/towncryer-sdk/config"
-	"github.com/volvlabs/towncryer-sdk/models"
+	"github.com/towncryerIO/towncryer-go-sdk/apis"
+	"github.com/towncryerIO/towncryer-go-sdk/config"
+	"github.com/towncryerIO/towncryer-go-sdk/models"
 )
 
 // TestDefaultTimeoutAppliedWithoutContextDeadline verifies that a request made with

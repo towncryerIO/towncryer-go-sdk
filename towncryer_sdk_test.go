@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/volvlabs/towncryer-sdk"
-	"github.com/volvlabs/towncryer-sdk/config"
+	"github.com/towncryerIO/towncryer-go-sdk"
+	"github.com/towncryerIO/towncryer-go-sdk/config"
 )
 
 func TestTowncryerSdk(t *testing.T) {

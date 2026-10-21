@@ -3,8 +3,8 @@ package apis
 import (
 	"context"
 
-	"github.com/volvlabs/towncryer-sdk/config"
-	"github.com/volvlabs/towncryer-sdk/models"
+	"github.com/towncryerIO/towncryer-go-sdk/config"
+	"github.com/towncryerIO/towncryer-go-sdk/models"
 )
 
 // CustomersAPI is the interface satisfied by Customers, the Customers API client.

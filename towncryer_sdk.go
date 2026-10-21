@@ -1,8 +1,8 @@
 package towncryer
 
 import (
-	"github.com/volvlabs/towncryer-sdk/apis"
-	"github.com/volvlabs/towncryer-sdk/config"
+	"github.com/towncryerIO/towncryer-go-sdk/apis"
+	"github.com/towncryerIO/towncryer-go-sdk/config"
 )
 
 // TowncryerSdk is the main SDK struct for interacting with the Towncryer APIs. It exposes each API

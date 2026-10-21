@@ -3,8 +3,8 @@ package apis
 import (
 	"context"
 
-	"github.com/volvlabs/towncryer-sdk/config"
-	"github.com/volvlabs/towncryer-sdk/models"
+	"github.com/towncryerIO/towncryer-go-sdk/config"
+	"github.com/towncryerIO/towncryer-go-sdk/models"
 )
 
 // EventsAPI is the interface satisfied by Events, the Events API client.

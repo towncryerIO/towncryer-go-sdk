@@ -11,7 +11,7 @@ import (
 
 	"github.com/carlmjohnson/requests"
 	"github.com/stretchr/testify/assert"
-	"github.com/volvlabs/towncryer-sdk/apis"
+	"github.com/towncryerIO/towncryer-go-sdk/apis"
 )
 
 type MockTransport struct {

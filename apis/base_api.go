@@ -9,10 +9,10 @@ import (
 	"runtime/debug"
 
 	"github.com/carlmjohnson/requests"
-	"github.com/volvlabs/towncryer-sdk/config"
+	"github.com/towncryerIO/towncryer-go-sdk/config"
 )
 
-const sdkModulePath = "github.com/volvlabs/towncryer-sdk"
+const sdkModulePath = "github.com/towncryerIO/towncryer-go-sdk"
 
 // sdkVersion returns the version of this module as recorded by the Go module
 // system in the consuming binary's build info, falling back to "dev" when
