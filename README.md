@@ -22,9 +22,9 @@ import (
 
 // Create a new configuration
 cfg := &config.Configuration{
-    BaseURL:      "https://api.towncryer.com",
-    APIKey:       "your-api-key",
-    APISecret:    "your-api-secret",
+    BaseUrl:   "https://api.towncryer.com",
+    ApiKey:    "your-api-key",
+    ApiSecret: "your-api-secret",
 }
 
 // Create a new instance of the Towncryer SDK
@@ -63,7 +63,7 @@ sdk := towncryer.New(cfg)
 
 ### Customers API
 
-The Customers API client provides methods for managing customer data, such as creating, retrieving, and updating customers.
+The Customers API client provides methods for managing customer data, such as creating customers.
 
 ```go
 // Create a new customer
@@ -76,12 +76,6 @@ customerPayload := &models.CreateCustomerPayload{
 }
 
 response, err := sdk.CustomersApi().CreateCustomer(ctx, customerPayload)
-if err != nil {
-    // Handle error
-}
-
-// Retrieve a customer
-customer, err := sdk.CustomersApi().GetCustomer(ctx, "CUST-12345")
 if err != nil {
     // Handle error
 }
