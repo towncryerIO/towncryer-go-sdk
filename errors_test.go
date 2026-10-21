@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/volvlabs/towncryer-sdk"
-	"github.com/volvlabs/towncryer-sdk/internal/helpers"
-	"github.com/volvlabs/towncryer-sdk/models"
+	"github.com/towncryerIO/towncryer-go-sdk"
+	"github.com/towncryerIO/towncryer-go-sdk/internal/helpers"
+	"github.com/towncryerIO/towncryer-go-sdk/models"
 )
 
 func TestAPIError_ErrorsAs(t *testing.T) {

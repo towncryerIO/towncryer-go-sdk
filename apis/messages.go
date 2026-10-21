@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/volvlabs/towncryer-sdk/config"
-	"github.com/volvlabs/towncryer-sdk/models"
+	"github.com/towncryerIO/towncryer-go-sdk/config"
+	"github.com/towncryerIO/towncryer-go-sdk/models"
 )
 
 var ErrNoMessagesSetInPayload = errors.New("message payload is totally empty")

@@ -1,4 +1,4 @@
-module github.com/volvlabs/towncryer-sdk
+module github.com/towncryerIO/towncryer-go-sdk
 
 go 1.22
 

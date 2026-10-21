@@ -1,6 +1,6 @@
 package towncryer
 
-import "github.com/volvlabs/towncryer-sdk/apis"
+import "github.com/towncryerIO/towncryer-go-sdk/apis"
 
 // APIError represents a non-2xx response from the Towncryer API. See apis.APIError
 // for details. It is aliased here so callers can write:

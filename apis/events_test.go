@@ -7,10 +7,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/volvlabs/towncryer-sdk/apis"
-	"github.com/volvlabs/towncryer-sdk/config"
-	"github.com/volvlabs/towncryer-sdk/internal/helpers"
-	"github.com/volvlabs/towncryer-sdk/models"
+	"github.com/towncryerIO/towncryer-go-sdk/apis"
+	"github.com/towncryerIO/towncryer-go-sdk/config"
+	"github.com/towncryerIO/towncryer-go-sdk/internal/helpers"
+	"github.com/towncryerIO/towncryer-go-sdk/models"
 )
 
 func TestPublishEvent(t *testing.T) {

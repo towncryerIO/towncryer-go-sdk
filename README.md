@@ -1,4 +1,6 @@
-# Towncryer SDK
+# Towncryer Go SDK
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/towncryerIO/towncryer-go-sdk.svg)](https://pkg.go.dev/github.com/towncryerIO/towncryer-go-sdk)
 
 The Towncryer SDK is a Go library that provides a convenient way to interact with the Towncryer API. It offers a set of API clients for various Towncryer services, such as Customers, Events, and Messages, allowing you to easily manage your application's interactions with the Towncryer platform.
 
@@ -7,8 +9,10 @@ The Towncryer SDK is a Go library that provides a convenient way to interact wit
 To use the Towncryer SDK in your Go project, you can install it using the following command:
 
 ```
-go get github.com/volvlabs/towncryer-sdk
+go get github.com/towncryerIO/towncryer-go-sdk
 ```
+
+Requires Go 1.22 or later.
 
 ## Usage
 
@@ -16,8 +20,8 @@ To get started with the Towncryer SDK, you need to create a new instance of the 
 
 ```go
 import (
-    "github.com/volvlabs/towncryer-sdk/apis"
-    "github.com/volvlabs/towncryer-sdk/config"
+    towncryer "github.com/towncryerIO/towncryer-go-sdk"
+    "github.com/towncryerIO/towncryer-go-sdk/config"
 )
 
 // Create a new configuration
@@ -31,7 +35,7 @@ cfg := &config.Configuration{
 sdk := towncryer.New(cfg)
 ```
 
-Once you have the SDK instance, you can access the various API clients and start interacting with the Towncryer API.
+Once you have the SDK instance, the API clients are available as fields: `sdk.Customers`, `sdk.Events` and `sdk.Messages`. The examples below also use `ctx` (a `context.Context`) and the `models` package (`github.com/towncryerIO/towncryer-go-sdk/models`).
 
 ### Configuration via environment variables
 
@@ -160,7 +164,7 @@ Every SDK call returns a plain `error`, but errors coming back from the Towncrye
 import (
     "errors"
 
-    "github.com/volvlabs/towncryer-sdk"
+    towncryer "github.com/towncryerIO/towncryer-go-sdk"
 )
 
 response, err := sdk.Customers.CreateCustomer(ctx, customerPayload)
@@ -194,9 +198,9 @@ Each resource client exposes a narrow interface (`apis.CustomersAPI`, `apis.Even
 import (
     "github.com/stretchr/testify/mock"
 
-    "github.com/volvlabs/towncryer-sdk/apis"
-    "github.com/volvlabs/towncryer-sdk/mocks"
-    "github.com/volvlabs/towncryer-sdk/models"
+    "github.com/towncryerIO/towncryer-go-sdk/apis"
+    "github.com/towncryerIO/towncryer-go-sdk/mocks"
+    "github.com/towncryerIO/towncryer-go-sdk/models"
 )
 
 // Your own code depends on the interface, not the concrete SDK type.
@@ -216,3 +220,7 @@ func TestSignup(t *testing.T) {
 ```
 
 Mocks are generated with [mockery](https://github.com/vektra/mockery) from the `.mockery.yaml` config in this repo; regenerate them with `mockery` after changing a resource interface.
+
+## Contributing
+
+Issues and pull requests are welcome at [github.com/towncryerIO/towncryer-go-sdk](https://github.com/towncryerIO/towncryer-go-sdk).
